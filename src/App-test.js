@@ -3,7 +3,7 @@ git init
 git add .
 git commit -m "Initial commit"
 git remote add origin https://github.com/cboyette01/degree-order-new.git
-git push -u origin main
+git push -u origin master
 
 npm install
 npm start
