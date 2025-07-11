@@ -2,6 +2,7 @@
 git init
 git add .
 git commit -m "Initial commit"
+git remote remove origin_order
 git remote add origin https://github.com/cboyette01/degree-order-new.git
 git push -u origin master
 
@@ -10,6 +11,9 @@ npm start
 
 npm install --save gh-pages
 npm run deploy
+
+npm install
+npm start
 */
 
 
@@ -206,7 +210,8 @@ function AIExposureVisualization() {
                 textAlign: 'center',
                 marginBottom: '20px',
                 color: '#333'
-            }}>Exploring the Impact of Career Nomenclature</h1>
+            }}>
+            </h1>
             {showSearch && (
                 <p style={{
                     textAlign: 'center',
