@@ -213,7 +213,7 @@ function AIExposureVisualization() {
                     marginBottom: '30px',
                     color: 'black'
                 }}>
-                    Please select the top 6 occupations you would consider for your future career.
+                    Please select the 6 occupations you previously entered. As a reminder, these are the top 6 occupations you would consider for your future career.
                 </p>
             )}
             {showSearch && (
