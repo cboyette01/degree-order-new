@@ -2,7 +2,7 @@
 git init
 git add .
 git commit -m "Initial commit"
-git remote remove origin_order
+git remote remove origin
 git remote add origin https://github.com/cboyette01/degree-order-new.git
 git push -u origin master
 
@@ -21,28 +21,40 @@ import React, { useState, useEffect } from 'react';
 
 const mockData = {
     occupations: [
-        { id: 11, name: "Management", exposure: -1.93, median_salary: "122,090", median_salary_change: '-$2,356', new_median_salary: '119,734', count: 0, time: 0, major: ["Business Management and Administration", "General Business", "Accounting"], occupation: [16, 1, 3] },
-        { id: 13, name: "Business and Financial", exposure: -3.47, median_salary: "80,920", median_salary_change: '-$2,808', new_median_salary: '78,112', count: 0, time: 0, major: ["Accounting", "Business Management and Administration", "General Business"], occupation: [0, 16, 2] },
-        { id: 15, name: "Computer and Mathematical", exposure: -3.47, median_salary: "105,850", median_salary_change: '-$3,673', new_median_salary: '102,177', count: 0, time: 0, major: ["Computer Science", "Electrical Engineering", "Computer Engineering"], occupation: [3, 16, 19] },
-        { id: 17, name: "Architecture and Engineering", exposure: -1.89, median_salary: "97,310", median_salary_change: '-$1,839', new_median_salary: '95,471', count: 0, time: 0, major: ["Civil Engineering", "Mechanical Engineering", "General Engineering"], occupation: [20, 19, 18] },
-        { id: 19, name: "Life, Physical, and Social Science", exposure: -1.91, median_salary: "78,980", median_salary_change: '-$1,509', new_median_salary: '77,471', count: 0, time: 0, major: ["Psychology", "Biology", "Chemistry"], occupation: [7, 9, 3] },
-        { id: 21, name: "Community and Social Service", exposure: -0.93, median_salary: "57,530", median_salary_change: '-$535', new_median_salary: '56,995', count: 0, time: 0, major: ["Psychology", "Social Work", "Sociology"], occupation: [9, 7, 10] },
-        { id: 23, name: "Legal", exposure: -1.61, median_salary: "99,990", median_salary_change: '-$1,610', new_median_salary: '98,380', count: 0, time: 0, major: ["Political Science and Government", "Criminal Justice and Fire Protection", "Psychology"], occupation: [16, 1, 0] },
-        { id: 25, name: "Educational Instruction and Library", exposure: -1.53, median_salary: "59,220", median_salary_change: '-$906', new_median_salary: '58,314', count: 0, time: 0, major: ["Education"], occupation: [16, 9, 0] },
-        { id: 27, name: "Arts, Design, Entertainment, Sports, and Media", exposure: -2.22, median_salary: "60,140", median_salary_change: '-$1,335', new_median_salary: '58,805', count: 0, time: 0, major: ["Commercial Art and Graphic Design", "Communications", "English Language and Literature"], occupation: [0, 7, 2] },
-        { id: 29, name: "Healthcare Practitioners and Technical", exposure: -2.08, median_salary: "83,090", median_salary_change: '-$1,728', new_median_salary: '81,362', count: 0, time: 0, major: ["Nursing", "Biology", "Psychology"], occupation: [10, 7, 5] },
-        { id: 31, name: "Healthcare Support", exposure: -2.74, median_salary: "37,180", median_salary_change: '-$1,019', new_median_salary: '36,161', count: 0, time: 0, major: ["BioScience", "Patient Care Technician Training", "Medical Assistant Training", "Sports Medicine & Rehabilitation"], occupation: [9, 5, 7] },
-        { id: 33, name: "Protective Service", exposure: -3.21, median_salary: "50,580", median_salary_change: '-$1,624', new_median_salary: '48,956', count: 0, time: 0, major: ["Criminal Justice"], occupation: [21, 0, 5] },
-        { id: 35, name: "Food Preparation and Serving Related", exposure: -5.10, median_salary: "34,130", median_salary_change: '-$1,741', new_median_salary: '32,389', count: 0, time: 0, major: ["Culinary Arts"], occupation: [20, 14, 15] },
-        { id: 37, name: "Building and Grounds Cleaning and Maintenance", exposure: -4.08, median_salary: "36,790", median_salary_change: '-$1,501', new_median_salary: '35,289', count: 0, time: 0, major: ["None"], occupation: [20, 18, 19] },
-        { id: 39, name: "Personal Care and Service", exposure: -2.32, median_salary: "35,110", median_salary_change: '-$815', new_median_salary: '34,295', count: 0, time: 0, major: ["Cosmetology", "Manicurist Training"], occupation: [9, 10, 7] },
-        { id: 41, name: "Sales and Related", exposure: -5.86, median_salary: "37,460", median_salary_change: '-$2,195', new_median_salary: '35,265', count: 0, time: 0, major: ["Business & Risk Management"], occupation: [16, 1, 0] },
-        { id: 43, name: "Office and Administrative Support", exposure: -8.66, median_salary: "46,320", median_salary_change: '-$4,011', new_median_salary: '42,309', count: 0, time: 0, major: ["Business & Risk Management"], occupation: [1, 0, 15] },
-        { id: 45, name: "Farming, Fishing, and Forestry", exposure: -4.11, median_salary: "36,750", median_salary_change: '-$1,510', new_median_salary: '35,240', count: 0, time: 0, major: ["BioScience"], occupation: [20, 18, 21] },
-        { id: 47, name: "Construction and Extraction", exposure: -1.78, median_salary: "58,360", median_salary_change: '-$1,039', new_median_salary: '57,321', count: 0, time: 0, major: ["Construction Technology"], occupation: [20, 19, 21] },
-        { id: 49, name: "Installation, Maintenance, and Repair", exposure: -2.12, median_salary: "58,230", median_salary_change: '-$1,234', new_median_salary: '56,996', count: 0, time: 0, major: ["Automotive Technology", "Engineering Technologies"], occupation: [20, 18, 21] },
-        { id: 51, name: "Production", exposure: -6.34, median_salary: "45,960", median_salary_change: '-$2,914', new_median_salary: '43,046', count: 0, time: 0, major: ["Precision Machining", "Welding Technology"], occupation: [18, 19, 21] },
-        { id: 53, name: "Transportation and Material Moving", exposure: -6.88, median_salary: "42,740", median_salary_change: '-$2,941', new_median_salary: '39,799', count: 0, time: 0, major: ["Automotive Technology"], occupation: [20, 18, 19] },
+        { id: 11, name: "Management", exposure: 3.91, median_salary: "122,090", median_salary_change: '-$2,356', new_median_salary: '119,734', count: 0, time: 0, major: ["Business", "Engineering", "Social Sciences"], occupation: [16, 1, 3] },
+        { id: 13, name: "Business and Financial", exposure: 6.16, median_salary: "80,920", median_salary_change: '-$2,808', new_median_salary: '78,112', count: 0, time: 0, major: ["Business", "Social Sciences", "Engineering"], occupation: [16, 0, 2] },
+        { id: 15, name: "Computer and Mathematical", exposure: 3.84, median_salary: "105,850", median_salary_change: '-$3,673', new_median_salary: '102,177', count: 0, time: 0, major: ["Computer and Information Sciences", "Business", "Engineering"], occupation: [3, 16, 19] },
+        { id: 17, name: "Architecture and Engineering", exposure: 3.07, median_salary: "97,310", median_salary_change: '-$1,839', new_median_salary: '95,471', count: 0, time: 0, major: ["Engineering", "Business", "Architecture"], occupation: [20, 19, 18] },
+        { id: 19, name: "Life, Physical, and Social Science", exposure: 3.41, median_salary: "78,980", median_salary_change: '-$1,509', new_median_salary: '77,471', count: 0, time: 0, major: ["Biology and Life Sciences", "Physical Sciences", "Psychology"], occupation: [9, 3, 7] },
+        { id: 21, name: "Community and Social Service", exposure: 2.23, median_salary: "57,530", median_salary_change: '-$535', new_median_salary: '56,995', count: 0, time: 0, major: ["Psychology", "Public Affairs, Policy, and Social Work", "Education Administration and Teaching"], occupation: [9, 7, 10] },
+        { id: 23, name: "Legal", exposure: 2.51, median_salary: "99,990", median_salary_change: '-$1,610', new_median_salary: '98,380', count: 0, time: 0, major: ["Social Sciences", "Business", "History"], occupation: [1, 16, 0] },
+        { id: 25, name: "Educational Instruction and Library", exposure: 3.35, median_salary: "59,220", median_salary_change: '-$906', new_median_salary: '58,314', count: 0, time: 0, major: ["Education Administration and Teaching", "Business", "Social Sciences"], occupation: [9, 5] },
+        { id: 27, name: "Arts, Design, Entertainment, Sports, and Media", exposure: 2.75, median_salary: "60,140", median_salary_change: '-$1,335', new_median_salary: '58,805', count: 0, time: 0, major: ["Fine Arts", "Communications", "Business"], occupation: [] },
+        { id: 29, name: "Healthcare Practitioners and Technical", exposure: 2.27, median_salary: "83,090", median_salary_change: '-$1,728', new_median_salary: '81,362', count: 0, time: 0, major: ["Medical and Health Sciences and Services", "Biology and Life Sciences", "Psychology"], occupation: [10, 5, 7] },
+        { id: 31, name: "Healthcare Support", exposure: 3.17, median_salary: "37,180", median_salary_change: '-$1,019', new_median_salary: '36,161', count: 0, time: 0, major: ["BioScience", "Patient Care Technician Training", "Medical Assistant Training", "Sports Medicine & Rehabilitation"], occupation: [9, 7, 5] },
+        { id: 33, name: "Protective Service", exposure: 2.6, median_salary: "50,580", median_salary_change: '-$1,624', new_median_salary: '48,956', count: 0, time: 0, major: ["Criminal Justice"], occupation: [21, 16] },
+        { id: 35, name: "Food Preparation and Serving Related", exposure: 0.27, median_salary: "34,130", median_salary_change: '-$1,741', new_median_salary: '32,389', count: 0, time: 0, major: ["Culinary Arts"], occupation: [20] },
+        { id: 37, name: "Building and Grounds Cleaning and Maintenance", exposure: 0.42, median_salary: "36,790", median_salary_change: '-$1,501', new_median_salary: '35,289', count: 0, time: 0, major: ["None"], occupation: [20, 18, 19] },
+        { id: 39, name: "Personal Care and Service", exposure: 1.13, median_salary: "35,110", median_salary_change: '-$815', new_median_salary: '34,295', count: 0, time: 0, major: ["Cosmetology", "Manicurist Training"], occupation: [9] },
+        { id: 41, name: "Sales and Related", exposure: 4.32, median_salary: "37,460", median_salary_change: '-$2,195', new_median_salary: '35,265', count: 0, time: 0, major: ["Business & Risk Management"], occupation: [16, 1, 0] },
+        { id: 43, name: "Office and Administrative Support", exposure: -0.1, median_salary: "46,320", median_salary_change: '-$4,011', new_median_salary: '42,309', count: 0, time: 0, major: ["Business & Risk Management"], occupation: [1, 0, 15] },
+        { id: 45, name: "Farming, Fishing, and For``=estry", exposure: -0.27, median_salary: "36,750", median_salary_change: '-$1,510', new_median_salary: '35,240', count: 0, time: 0, major: ["BioScience"], occupation: [20, 18, 19] },
+        { id: 47, name: "Construction and Extraction", exposure: 2.15, median_salary: "58,360", median_salary_change: '-$1,039', new_median_salary: '57,321', count: 0, time: 0, major: ["Construction Technology"], occupation: [20, 19, 21] },
+        { id: 49, name: "Installation, Maintenance, and Repair", exposure: 1.31, median_salary: "58,230", median_salary_change: '-$1,234', new_median_salary: '56,996', count: 0, time: 0, major: ["Automotive Technology", "Engineering Technologies"], occupation: [20, 18, 21] },
+        { id: 51, name: "Production", exposure: -2.04, median_salary: "45,960", median_salary_change: '-$2,914', new_median_salary: '43,046', count: 0, time: 0, major: ["Precision Machining", "Welding Technology"], occupation: [18, 19, 3] },
+        { id: 53, name: "Transportation and Material Moving", exposure: -0.49, median_salary: "42,740", median_salary_change: '-$2,941', new_median_salary: '39,799', count: 0, time: 0, major: ["Automotive Technology"], occupation: [20, 19, 18] },
+        // { id: 31, name: "Healthcare Support", exposure: -2.74, median_salary: "37,180", median_salary_change: '-$1,019', new_median_salary: '36,161', count: 0, time: 0, major: ["Medical and Health Sciences and Services", "Business", "Biology and Life Sciences"], occupation: [9, 5, 7] },
+        // { id: 33, name: "Protective Service", exposure: -3.21, median_salary: "50,580", median_salary_change: '-$1,624', new_median_salary: '48,956', count: 0, time: 0, major: ["Criminal Justice and Fire Protection", "Business", "Social Sciences"], occupation: [21, 0, 5] },
+        // { id: 35, name: "Food Preparation and Serving Related", exposure: -5.10, median_salary: "34,130", median_salary_change: '-$1,741', new_median_salary: '32,389', count: 0, time: 0, major: ["Business", "Fine Arts", "Social Sciences"], occupation: [20, 14, 15] },
+        // { id: 37, name: "Building and Grounds Cleaning and Maintenance", exposure: -4.08, median_salary: "36,790", median_salary_change: '-$1,501', new_median_salary: '35,289', count: 0, time: 0, major: ["Business", "Education Administration and Teaching", "Social Sciences"], occupation: [20, 18, 19] },
+        // { id: 39, name: "Personal Care and Service", exposure: -2.32, median_salary: "35,110", median_salary_change: '-$815', new_median_salary: '34,295', count: 0, time: 0, major: ["Business", "Education Administration and Teaching", "Fine Arts"], occupation: [9, 10, 7] },
+        // { id: 41, name: "Sales and Related", exposure: -5.86, median_salary: "37,460", median_salary_change: '-$2,195', new_median_salary: '35,265', count: 0, time: 0, major: ["Business", "Social Sciences", "Communications"], occupation: [16, 1, 0] },
+        // { id: 43, name: "Office and Administrative Support", exposure: -8.66, median_salary: "46,320", median_salary_change: '-$4,011', new_median_salary: '42,309', count: 0, time: 0, major: ["Business", "Social Sciences", "Education Administration and Teaching"], occupation: [1, 0, 15] },
+        // { id: 45, name: "Farming, Fishing, and Forestry", exposure: -4.11, median_salary: "36,750", median_salary_change: '-$1,510', new_median_salary: '35,240', count: 0, time: 0, major: ["Agriculture", "Business", "Education Administration and Teaching"], occupation: [20, 18, 21] },
+        // { id: 47, name: "Construction and Extraction", exposure: -1.78, median_salary: "58,360", median_salary_change: '-$1,039', new_median_salary: '57,321', count: 0, time: 0, major: ["Business", "Engineering", "Social Sciences"], occupation: [20, 19, 21] },
+        // { id: 49, name: "Installation, Maintenance, and Repair", exposure: -2.12, median_salary: "58,230", median_salary_change: '-$1,234', new_median_salary: '56,996', count: 0, time: 0, major: ["Business", "Engineering", "Computer and Information Sciences"], occupation: [20, 18, 21] },
+        // { id: 51, name: "Production", exposure: -6.34, median_salary: "45,960", median_salary_change: '-$2,914', new_median_salary: '43,046', count: 0, time: 0, major: ["Business", "Engineering", "Fine Arts"], occupation: [18, 19, 21] },
+        // { id: 53, name: "Transportation and Material Moving", exposure: -6.88, median_salary: "42,740", median_salary_change: '-$2,941', new_median_salary: '39,799', count: 0, time: 0, major: ["Business", "Engineering", "Social Sciences"], occupation: [20, 18, 19] },
     ]
 };
 
@@ -149,16 +161,16 @@ function AIExposureVisualization() {
     };
 
     const handleSubmit = () => {
-        if (list.length === 6) {
+        // if (list.length === 6) {
             const sortedList = [...list].sort((a, b) => a.name.localeCompare(b.name))
             setRanked(sortedList);
             setShowSearch(false);
             updateTimeSpentPages(0, timeSpent);
             setTimeSpent(0);
-        }
-        else {
-            alert("You need to select 6 occupations before you can move on.");
-        }
+        // }
+        // else {
+        //     alert("You need to select 6 occupations before you can move on.");
+        // }
     };
 
     const handleNext = () => {
@@ -348,7 +360,7 @@ function AIExposureVisualization() {
                                 Preferred Occupations
                             </label>
                             <div>
-                                <ol>
+                                <ol id="preferred_occupations">
                                     {list.map(item => (
                                         <li key={item.name}>{item.name}
                                             <button
