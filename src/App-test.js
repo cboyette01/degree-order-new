@@ -19,6 +19,9 @@ npm start
 
 import React, { useState, useEffect } from 'react';
 
+/* Stores data for each occupation. The data is the two digit SOC code, the name of the occupation, the predicted percent median wage change from Kogan et al. (2023), the 2024 median salary, the predicted actual median wage change from Kogan et al. (2023), the number of times a user
+has viewed the detailed information, the time each user has spent viewing the detailed information, the top majors that individuals in the occupation have, and the top related occupations from O*NET
+*/
 const mockData = {
     occupations: [
         { id: 11, name: "Management", exposure: 3.91, median_salary: "122,090", median_salary_change: "$4,774", new_median_salary: "126,864", count: 0, time: 0, major: ["Business", "Engineering", "Social Sciences"], occupation: [16, 1, 3] },
@@ -59,22 +62,36 @@ const mockData = {
 };
 
 function AIExposureVisualization() {
+    // The below opoerations help define states that are used to know when items are selected, track which terms are searched, when to change pages, how much time has elapsed, etc.
+    // Used to store the current user-inputted search term
     const [searchTerm, setSearchTerm] = useState('');
+    // Used to store the list of user-inputted searcg terms
     const [searchTerms, setSearchTerms] = useState('');
+    // Used to store the sorted list of preffered occupations
     const [ranked, setRanked] = useState(null);
+    // Used to track which occupation is being clicked on the second and thid pages
     const [selectedItem, setSelectedItem] = useState(null);
+    // Used to store the list of preffered occupations
     const [list, setList] = useState([]);
+    // Used to determine whether to disply the first page
     const [showSearch, setShowSearch] = useState(true);
+    // Used to determine whether to disply the third page
     const [showTop, setShowTop] = useState(false);
+    // Used to determine whether to disply the final page
+    const [showEnd, setShowEnd] = useState(false);
+    // Used to track the time spent on the current page
     const [timeSpent, setTimeSpent] = useState(0);
-    const [timeSpentPages, setTimeSpentPages] = useState([0, 0, 0]);
+    // Used to track the time spent on each page
+    const [timeSpentPages, setTimeSpentPages] = useState([0, 0, 0, 0]);
+    // Used to track the start time for viewing an occupation's detailed information
     const [timeSpentDetailStart, setTimeSpentDetailStart] = useState(0);
+    // Used to track the time spent on each occupation's detailed information
     const [timeSpentDetail, setTimeSpentDetail] = useState(mockData.occupations);
 
     // Get correct listing of elements. Ex. X, Y, and Z
     const listFormatter = new Intl.ListFormat('en-US', { style: 'long', type: 'conjunction' });
 
-    // Define top 3 positive and negative occupations
+    // Define top 3 positive and negative occupations based on the occupation's id
     const most_positive = 3;
     const second_positive = 8;
     const third_positive = 13;
@@ -82,7 +99,7 @@ function AIExposureVisualization() {
     const second_negative = 15;
     const third_negative = 20;
 
-    // Set timer
+    // Set timer to track how much time a user spends on each occupation and page
     useEffect(() => {
         const timer = setInterval(() => {
             setTimeSpent(prev => prev + 1);
@@ -92,18 +109,27 @@ function AIExposureVisualization() {
         return () => clearInterval(timer);
     }, []);
 
-    // Colors for the bars
+    // Define the colors for occupations when they have postive, negative, and neutral projected wage changes
+    // Color is red
     const negativeColor = ['#c0c0c0'];
+    // Color is grey
     const neutralColor = ['#c0c0c0'];
+    // Color is green
     const positiveColor = ['#c0c0c0'];
 
-    // Updated getColor function to accept a type parameter
-    const getColor = (value) => {
-        const colors = [negativeColor, neutralColor, positiveColor]
-        if (value <= -2) return colors[0];
-        if (value >= 2) return colors[2];
-        return colors[1];
-    };
+    // Assigns colors to occupations based on their exposure value
+    // const getColor = (value) => {
+    //     const colors = [negativeColor, neutralColor, positiveColor]
+    //     if (value >= 1) {
+    //         return colors[2];
+    //     }
+    //     // Occupations are assigned red if their predicted wage change is less than or equal to -1%
+    //     else if (value <= -1) {
+    //         return colors[0];
+    //     }
+    //     // Occupations are assigned grey if there predicted wage change is between -1% and 1%
+    //     return colors[1];
+    // };
 
     // Filter and sort data
     let data = [...mockData['occupations']];
@@ -116,7 +142,14 @@ function AIExposureVisualization() {
     // Handle item selection
     const handleItemClick = (item) => {
         if (!list.find(i => i.name === item.name) & list.length < 6) {
+            /* Adds the clicked occupation to the list of preffered occupations if the number
+           of preffered occupation is not greater than 6 and the occupation is not already
+           in the list
+           */
             setList([...list, item]);
+            /* Updates list of search terms the user has typed to search for occupations only
+            if the user typed something in the search bar
+            */
             if (searchTerms === '') {
                 setSearchTerms(searchTerm);
             }
@@ -126,25 +159,34 @@ function AIExposureVisualization() {
         }
     };
 
-    // Map to create a new array with the updated item
+    // Updates the time spent looking at detailed information for each occupation
     const updateTimeSpentDetail = (indexToUpdate, newValue) => {
         setTimeSpentDetail(newtimeSpentDetail => newtimeSpentDetail.map(item =>
             item.id === indexToUpdate ? { ...item, time: item.time + newValue } : item
         ));
     };
 
+    // Updates the time spent on each page of the visualization
     const updateTimeSpentPages = (indexToUpdate, newValue) => {
         setTimeSpentPages(timeSpentPages.map((item, index) => index === indexToUpdate ? newValue + item : item)); // Map to create a new array with the updated item
     };
 
+    // Handles user trying to view the detailed information for an occupation
     const handleItemClickDetailed = (item) => {
+        // Updates the time spent looking at each occupation's detailed information
         if (selectedItem) {
             updateTimeSpentDetail(selectedItem.id, timeSpent - timeSpentDetailStart);
         }
+        // Updates the number of views on each occupation's detailed information
         if ((selectedItem && selectedItem !== item) || !selectedItem) {
             item.count++;
         }
+        // Helps hide the detailed information if the same occupation is clicked twice
         setSelectedItem(selectedItem?.name === item.name ? null : item);
+        /* Sets the start time for an occupation's detailed information.
+        This is used to help calculate the total amount of time spent on 
+        an occupation's detailed information.
+        */
         setTimeSpentDetailStart(timeSpent);
     };
 
@@ -156,53 +198,80 @@ function AIExposureVisualization() {
         }
     };
 
+    // Handles removing an item from the list of preffered occupations
     const handleRemove = (id) => {
         setList(list.filter((item) => item.name !== id));
     };
 
+    // Handles user clicking the submit button at the beginning of the visualization
     const handleSubmit = () => {
         // if (list.length === 6) {
-            const sortedList = [...list].sort((a, b) => a.name.localeCompare(b.name))
-            setRanked(sortedList);
-            setShowSearch(false);
-            updateTimeSpentPages(0, timeSpent);
-            setTimeSpent(0);
+        // Sorts the the preffered occupations in order of highest to lowest exposure
+        const sortedList = [...list].sort((a, b) => a.name.localeCompare(b.name))
+        setRanked(sortedList);
+        // Hides the preffered occupations searcgh bar
+        setShowSearch(false);
+        // Updates the time spent on the first page
+        updateTimeSpentPages(0, timeSpent);
+        // Resets the time spent on a page back to zero
+        setTimeSpent(0);
         // }
         // else {
         //     alert("You need to select 6 occupations before you can move on.");
         // }
     };
 
+    // Handles user clicking the next button
     const handleNext = () => {
+        // Displays the top 3 positively and negatively impacted occupations
         setShowTop(true);
+        // Hides the second page information
         setRanked(null);
+        // Updates the time spent looking at each occupation's detailed information
         if (selectedItem) {
             updateTimeSpentDetail(selectedItem.id, timeSpent - timeSpentDetailStart)
         }
+        // Hides the detailed information if still being displayed when the next button is pushed
         setSelectedItem(null);
+        // Updates the time spent on page 2
         updateTimeSpentPages(1, timeSpent);
+        // Resets the time spent on a page back to zero
         setTimeSpent(0);
     };
 
+    // Handles user clicking back button
     const handleBack = () => {
+        // Hides the top 3 positively and negatively impacted occupations
         setShowTop(false);
+        // Displays the second page
         handleSubmit();
+        // Updates the time spent looking at each occupation's detailed information
         if (selectedItem) {
             updateTimeSpentDetail(selectedItem.id, timeSpent - timeSpentDetailStart)
         }
+        // Hides the detailed information if still being displayed when the next button is pushed
         setSelectedItem(null);
+        // Updates the time spent on page 3
         updateTimeSpentPages(2, timeSpent);
+        // Resets the time spent on a page back to zero
         setTimeSpent(0);
     };
 
+    // Handles user clicking the end button at the end of the visualization
     const handleEnd = () => {
+        // Hide the top 3 positively and negatively impacted occupations
         setShowTop(false);
+        // Updates the time spent looking at each occupation's detailed information
         if (selectedItem) {
             updateTimeSpentDetail(selectedItem.id, timeSpent - timeSpentDetailStart)
         }
+        // Hides the detailed information if still being displayed when the next button is pushed
         setSelectedItem(null);
+        // Updates the time spent on the third page
         updateTimeSpentPages(2, timeSpent);
+        // Resets the time spent on a page back to zero
         setTimeSpent(0);
+        // Displays a message to the browser to tell it to redisplay the Next button in Qualtrics
         window.parent.postMessage("showNextButton", "*");
     };
 
@@ -216,6 +285,7 @@ function AIExposureVisualization() {
             boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
             fontFamily: 'Arial, sans-serif'
         }}>
+            {/* Displays overall header for the visualization*/}
             <h1 style={{
                 fontSize: '28px',
                 fontWeight: 'bold',
@@ -224,6 +294,7 @@ function AIExposureVisualization() {
                 color: '#333'
             }}>
             </h1>
+            {/* Displays additional header for the first page */}
             {showSearch && (
                 <p style={{
                     textAlign: 'center',
@@ -233,14 +304,7 @@ function AIExposureVisualization() {
                     Please select the 6 occupations you previously entered. As a reminder, these are the top 6 occupations you would consider for your future career.
                 </p>
             )}
-            {showSearch && (
-                <p style={{
-                    textAlign: 'center',
-                    marginBottom: '30px',
-                    color: 'black'
-                }}>
-                </p>
-            )}
+            {/* Displays additional header for the second and third pages */}
             {(ranked || showTop) && (
                 <p style={{
                     textAlign: 'center',
@@ -251,6 +315,7 @@ function AIExposureVisualization() {
                 </p>
             )}
 
+            {/* Displays the first page */}
             {showSearch && (
                 <div style={{
                     display: 'grid',
@@ -276,6 +341,7 @@ function AIExposureVisualization() {
                             Use the search bar to search for your preferred occupations.
                         </label>
                         <div style={{ position: 'relative' }}>
+                            {/* Handles user input in the search bar*/}
                             <input
                                 type="text"
                                 placeholder='Search for occupations'
@@ -306,6 +372,7 @@ function AIExposureVisualization() {
                                 overflowY: 'scroll'
                             }}
                         >
+                            {/* Shows all the occupations based on the search terms*/}
                             {data.map((item, index) => {
                                 return (
                                     <div
@@ -323,16 +390,7 @@ function AIExposureVisualization() {
                                             backgroundColor: 'transparent'
                                         }}
                                     >
-                                        {/* <div style={{
-                                            width: '150px',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            whiteSpace: 'nowrap',
-                                            fontWeight: 'normal',
-                                            fontSize: '15px'
-                                        }}> */}
                                         {item.name}
-                                        {/* </div> */}
                                     </div>
                                 );
                             })}
@@ -360,9 +418,11 @@ function AIExposureVisualization() {
                                 Preferred Occupations
                             </label>
                             <div>
+                                {/* Displays the items that the user has clicked on the first paege */}
                                 <ol id="preferred_occupations">
                                     {list.map(item => (
                                         <li key={item.name}>{item.name}
+                                            {/* Displays a remove item button */}
                                             <button
                                                 onClick={() => handleRemove(item.name)}
                                                 style={{
@@ -380,6 +440,7 @@ function AIExposureVisualization() {
                                         </li>
                                     ))}
                                 </ol>
+                                {/* Displays a clear all items button */}
                                 <button
                                     onClick={handleClearItems}
                                     disabled={list.length === 0}
@@ -389,6 +450,7 @@ function AIExposureVisualization() {
                                 >
                                     Clear List
                                 </button>
+                                {/* Displays a submit button */}
                                 <button
                                     onClick={handleSubmit}
                                     disabled={list.length === 0}
@@ -406,7 +468,8 @@ function AIExposureVisualization() {
                     </div>
                 </div>
             )}
-            {/* Ordered List */}
+
+            {/* Displays the second page */}
             {ranked && (
                 <>
                     <div style={{
@@ -421,13 +484,6 @@ function AIExposureVisualization() {
                             borderRadius: '8px',
                             boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                         }}>
-                            {/* <label style={{
-                                display: 'block',
-                                fontSize: '16px',
-                                fontWeight: 'bold',
-                                marginBottom: '10px',
-                                color: 'black'
-                            }}> */}
                             <p style={{
                                 textAlign: 'center',
                                 marginBottom: '30px',
@@ -436,15 +492,15 @@ function AIExposureVisualization() {
                                 Here are the occupations you selected. </p>
 
                             They are ranked in alphabetical order.
-                            {/* </label> */}
                             <div>
+                                {/* Displays the preffered occupations*/}
                                 <ol style={{ paddingLeft: '20px', marginBottom: '10px', lineHeight: '1.6', color: 'black' }}>
                                     {ranked.map((item, index) => {
                                         return (
                                             <li key={item.name} style={{ listStyleType: 'none', marginBottom: '12px' }}>
+                                                {/* Allows users to view the detailed informatiion for an occupation */}
                                                 <button onClick={() => handleItemClickDetailed(item)}
                                                     style={{
-                                                        // backgroundColor: getColor(item.exposure),
                                                         border: '1px solid #ccc',
                                                         borderRadius: '6px',
                                                         padding: '10px 16px',
@@ -456,11 +512,8 @@ function AIExposureVisualization() {
                                                         textAlign: 'left',
                                                         transition: 'background 0.2s, color 0.2s'
                                                     }}
-                                                    // onMouseOver={e => e.currentTarget.style.backgroundColor = '#e0e7ff'}
-                                                    // onMouseOut={e => e.currentTarget.style.backgroundColor = getColor(item.exposure)}
                                                 >{index + 1}. {item.name}
                                                 </button>
-                                                {/* : from ${item.median_salary} to ${item.new_median_salary} (<span style={{ backgroundColor: getColor(item.exposure) }}>{item.median_salary_change}</span> change) each year */}
                                             </li>
                                         );
                                     })}
@@ -470,6 +523,8 @@ function AIExposureVisualization() {
                     </div>
                 </>
             )}
+
+            {/* Displays the third page*/}
             {showTop && (
                 <>
                     <div style={{
@@ -484,26 +539,19 @@ function AIExposureVisualization() {
                             borderRadius: '8px',
                             boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                         }}>
-                            {/* <label style={{
-                                display: 'block',
-                                fontSize: '16px',
-                                fontWeight: 'bold',
-                                marginBottom: '10px',
-                                color: 'black'
-                            }}> */}
                             <p style={{
                                 textAlign: 'center',
                                 marginBottom: '30px',
                                 color: 'black'
                             }}>Of all occupations, including occupations you did not select...</p>
                             ...here are the first 3 occupations in terms of alphabetical order.
-                            {/* </label> */}
                             <div>
                                 <ol style={{ paddingLeft: '20px', marginBottom: '10px', lineHeight: '1.6', color: 'black' }}>
+                                    {/* Displays the top occupation in terms of alphabetical order */}
                                     <li style={{ listStyleType: 'none', marginBottom: '12px' }}>
+                                        {/* Allows users to view the detailed informatiion for an occupation */}
                                         <button onClick={() => handleItemClickDetailed(mockData.occupations[most_positive])}
                                             style={{
-                                                // backgroundColor: getColor(mockData.occupations[most_positive].exposure),
                                                 border: '1px solid #ccc',
                                                 borderRadius: '6px',
                                                 padding: '10px 16px',
@@ -515,18 +563,15 @@ function AIExposureVisualization() {
                                                 textAlign: 'left',
                                                 transition: 'background 0.2s, color 0.2s'
                                             }}
-                                            // onMouseOver={e => e.currentTarget.style.backgroundColor = '#e0e7ff'}
-                                            // onMouseOut={e => e.currentTarget.style.backgroundColor = getColor(mockData.occupations[most_positive].exposure)}
                                         >
                                             1. {mockData.occupations[most_positive].name}
                                         </button>
-                                        {/* : from ${mockData.occupations[most_positive].median_salary} to ${mockData.occupations[most_positive].new_median_salary} (<span style={{ backgroundColor: getColor(mockData.occupations[most_positive].exposure) }}>{mockData.occupations[most_positive].median_salary_change}</span> change) each year */}
                                     </li>
+                                    {/* Displays the second top occupation in terms of alphabetical order */}
                                     <li style={{ listStyleType: 'none', marginBottom: '12px' }}>
-                                        <button
-                                            onClick={() => handleItemClickDetailed(mockData.occupations[second_positive])}
+                                        {/* Allows users to view the detailed informatiion for an occupation */}
+                                        <button onClick={() => handleItemClickDetailed(mockData.occupations[second_positive])}
                                             style={{
-                                                // backgroundColor: getColor(mockData.occupations[second_positive].exposure),
                                                 border: '1px solid #ccc',
                                                 borderRadius: '6px',
                                                 padding: '10px 16px',
@@ -538,18 +583,16 @@ function AIExposureVisualization() {
                                                 textAlign: 'left',
                                                 transition: 'background 0.2s, color 0.2s'
                                             }}
-                                            // onMouseOver={e => e.currentTarget.style.backgroundColor = '#e0e7ff'}
-                                            // onMouseOut={e => e.currentTarget.style.backgroundColor = getColor(mockData.occupations[second_positive].exposure)}
                                         >
                                             2. {mockData.occupations[second_positive].name}
                                         </button>
-                                        {/* : from ${mockData.occupations[second_positive].median_salary} to ${mockData.occupations[second_positive].new_median_salary} (<span style={{ backgroundColor: getColor(mockData.occupations[second_positive].exposure) }}>{mockData.occupations[second_positive].median_salary_change}</span> change) each year */}
 
                                     </li>
+                                    {/* Displays the third top occupation in terms of alphabetical order */}
                                     <li style={{ listStyleType: 'none', marginBottom: '12px' }}>
+                                        {/* Allows users to view the detailed informatiion for an occupation */}
                                         <button onClick={() => handleItemClickDetailed(mockData.occupations[third_positive])}
                                             style={{
-                                                // backgroundColor: getColor(mockData.occupations[third_positive].exposure),
                                                 border: '1px solid #ccc',
                                                 borderRadius: '6px',
                                                 padding: '10px 16px',
@@ -561,30 +604,20 @@ function AIExposureVisualization() {
                                                 textAlign: 'left',
                                                 transition: 'background 0.2s, color 0.2s'
                                             }}
-                                            // onMouseOver={e => e.currentTarget.style.backgroundColor = '#e0e7ff'}
-                                            // onMouseOut={e => e.currentTarget.style.backgroundColor = getColor(mockData.occupations[third_positive].exposure)}
                                         >
                                             3. {mockData.occupations[third_positive].name}
                                         </button>
-                                        {/* : from ${mockData.occupations[third_positive].median_salary} to ${mockData.occupations[third_positive].new_median_salary} (<span style={{ backgroundColor: getColor(mockData.occupations[third_positive].exposure) }}>{mockData.occupations[third_positive].median_salary_change}</span> change) each year */}
                                     </li>
                                 </ol>
                             </div>
-                            {/* <label style={{
-                                display: 'block',
-                                fontSize: '16px',
-                                fontWeight: 'bold',
-                                marginBottom: '10px',
-                                color: 'black'
-                            }}> */}
                             ...here are the last 3 occupations in terms of alphabetical order.
-                            {/* </label> */}
                             <div>
                                 <ol style={{ paddingLeft: '20px', marginBottom: '10px', lineHeight: '1.6', color: 'black' }}>
+                                    {/* Displays the bottom occupation in terms of alphabetical order */}
                                     <li style={{ listStyleType: 'none', marginBottom: '12px' }}>
+                                        {/* Allows users to view the detailed informatiion for an occupation */}
                                         <button onClick={() => handleItemClickDetailed(mockData.occupations[most_negative])}
                                             style={{
-                                                // backgroundColor: getColor(mockData.occupations[most_negative].exposure),
                                                 border: '1px solid #ccc',
                                                 borderRadius: '6px',
                                                 padding: '10px 16px',
@@ -596,16 +629,14 @@ function AIExposureVisualization() {
                                                 textAlign: 'left',
                                                 transition: 'background 0.2s, color 0.2s'
                                             }}
-                                            // onMouseOver={e => e.currentTarget.style.backgroundColor = '#e0e7ff'}
-                                            // onMouseOut={e => e.currentTarget.style.backgroundColor = getColor(mockData.occupations[most_negative].exposure)}
                                         >
                                             1. {mockData.occupations[most_negative].name}
                                         </button></li>
-                                    {/* : from ${mockData.occupations[most_negative].median_salary} to ${mockData.occupations[most_negative].new_median_salary} (<span style={{ backgroundColor: getColor(mockData.occupations[most_negative].exposure) }}>{mockData.occupations[most_negative].median_salary_change}</span> change) each year */}
+                                    {/* Displays the second bottom occupation in terms of alphabetical order */}
                                     <li style={{ listStyleType: 'none', marginBottom: '12px' }}>
+                                        {/* Allows users to view the detailed informatiion for an occupation */}
                                         <button onClick={() => handleItemClickDetailed(mockData.occupations[second_negative])}
                                             style={{
-                                                // backgroundColor: getColor(mockData.occupations[second_negative].exposure),
                                                 border: '1px solid #ccc',
                                                 borderRadius: '6px',
                                                 padding: '10px 16px',
@@ -617,17 +648,14 @@ function AIExposureVisualization() {
                                                 textAlign: 'left',
                                                 transition: 'background 0.2s, color 0.2s'
                                             }}
-                                            // onMouseOver={e => e.currentTarget.style.backgroundColor = '#e0e7ff'}
-                                            // onMouseOut={e => e.currentTarget.style.backgroundColor = getColor(mockData.occupations[second_negative].exposure)}
                                         >
                                             2. {mockData.occupations[second_negative].name}
                                         </button></li>
-                                    {/* : from ${mockData.occupations[second_negative].median_salary} to ${mockData.occupations[second_negative].new_median_salary}
-                                            (<span style={{ backgroundColor: getColor(mockData.occupations[second_negative].exposure) }}>{mockData.occupations[second_negative].median_salary_change}</span> change) each year */}
+                                    {/* Displays the third bottom occupation in terms of alphabetical order */}
                                     <li style={{ listStyleType: 'none', marginBottom: '12px' }}>
+                                        {/* Allows users to view the detailed informatiion for an occupation */}
                                         <button onClick={() => handleItemClickDetailed(mockData.occupations[third_negative])}
                                             style={{
-                                                // backgroundColor: getColor(mockData.occupations[third_negative].exposure),
                                                 border: '1px solid #ccc',
                                                 borderRadius: '6px',
                                                 padding: '10px 16px',
@@ -639,19 +667,17 @@ function AIExposureVisualization() {
                                                 textAlign: 'left',
                                                 transition: 'background 0.2s, color 0.2s'
                                             }}
-                                            // onMouseOver={e => e.currentTarget.style.backgroundColor = '#e0e7ff'}
-                                            // onMouseOut={e => e.currentTarget.style.backgroundColor = getColor(mockData.occupations[third_negative].exposure)}
                                         >
                                             3.  {mockData.occupations[third_negative].name}
                                         </button></li>
-                                    {/* : from ${mockData.occupations[third_negative].median_salary} to ${mockData.occupations[third_negative].new_median_salary} (<span style={{ backgroundColor: getColor(mockData.occupations[third_negative].exposure) }}>{mockData.occupations[third_negative].median_salary_change}</span> change) each year */}
                                 </ol>
                             </div>
                         </div >
                     </div >
                 </>
-            )
-            }
+            )}
+
+            {/* Displays the end page */}
             {!showTop && !ranked && !showSearch && (
                 <>
                     <div style={{
@@ -667,6 +693,8 @@ function AIExposureVisualization() {
                             borderRadius: '8px',
                             boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                         }}>
+                            {/* Displays the tracking information. The tracking information includes the number of clicks and time spent on each occupation's
+                            detailed information, the search terms used, and the time spent on each page.*/}
                             {/* <label style={{
                                 display: 'block',
                                 fontSize: '16px',
@@ -676,15 +704,15 @@ function AIExposureVisualization() {
                             }}> */}
                             {/* Number of clicks and time spent on detailed information for each occupation */}
                             {/* </label> */}
-                            <div>
-                                {/* <ul>
+                            {/* <div> */}
+                            {/* <ul>
                                     {mockData.occupations.map(occupation => {
                                         return (
                                             <li key={occupation.name}>{occupation.name}: {occupation.count} clicks and {timeSpentDetail[occupation.id].time} seconds</li>
                                         )
                                     })}
                                 </ul> */}
-                            </div>
+                            {/* </div> */}
                             {/* <label style={{
                                 display: 'block',
                                 fontSize: '16px',
@@ -717,8 +745,8 @@ function AIExposureVisualization() {
                         </div >
                     </div >
                 </>
-            )
-            }
+            )}
+
             {/* Detail view when an item is selected */}
             {
                 selectedItem && (
@@ -746,24 +774,16 @@ function AIExposureVisualization() {
                             <h4 style={{ marginBottom: '10px', fontWeight: 'bold', color: '#1e40af' }}>
                                 Detailed Information
                             </h4>
-                            {/* <p style={{ marginBottom: '10px', lineHeight: '1.5', color: 'black' }}>
-                                Workers in the {selectedItem.name} occupations have a projected <strong>
-                                    {selectedItem.exposure < -2.53 ?
-                                        `big decrease` :
-                                        `small decrease`
-                                    }
-                                </strong> in money earned.
-                            </p> */}
                             <p style={{ lineHeight: '1.5', color: 'black' }}>
                                 <strong>{`Occupations similar to ${selectedItem.name} are shown below.`}</strong>
                             </p>
                             <p style={{ lineHeight: '1.5', color: 'black' }}>
+                                {/* Displays the related occupations */ }
                                 <ol style={{ paddingLeft: '20px', marginBottom: '10px', lineHeight: '1.6', color: 'black' }}>
                                     {(selectedItem.occupation).map(occupation_number => {
                                         return (
-                                            <li><span style={{ }}>
+                                            <li><span style={{}}>
                                                 {mockData.occupations[occupation_number].name}</span></li>
-                                            // : from ${mockData.occupations[occupation_number].median_salary} to ${mockData.occupations[occupation_number].new_median_salary} (<span style={{ backgroundColor: getColor(mockData.occupations[occupation_number].exposure) }}> {mockData.occupations[occupation_number].median_salary_change}</span> change) each year
                                         )
                                     })}
                                 </ol>
@@ -774,6 +794,8 @@ function AIExposureVisualization() {
                             <p style={{ lineHeight: '1.5', color: 'black' }}>
                                 <ul style={{ textAlign: 'left', listStylePosition: 'inside', paddingLeft: 0, margin: 0 }}>
                                     <li>
+                                        {/*Determines whether to display that the selected occupation has a majority of workers with a bachelors degree, 
+                                        a pluraity of workers with a bachelors degree, or a majoirty of workers without a college degree*/}
                                         {selectedItem.name}:
                                         {selectedItem.id <= 27 ?
                                             ` The majority of workers in this occupation hold at least a college (bachelor’s) degree. ` :
@@ -786,6 +808,8 @@ function AIExposureVisualization() {
                                     {(selectedItem.occupation).map(occupation_number => {
                                         return (
                                             <li >
+                                                {/*Determines whether to display that the related occupations have a majority of workers with a bachelors degree, 
+                                                a pluraity of workers with a bachelors degree, or a majoirty of workers without a college degree*/}
                                                 {mockData.occupations[occupation_number].name}:
                                                 {mockData.occupations[occupation_number].id <= 27 ?
                                                     ` The majority of workers in this occupation hold at least a college (bachelor’s) degree. ` :
@@ -799,18 +823,12 @@ function AIExposureVisualization() {
                                     })}
                                 </ul>
                             </p>
-                            {/* {(selectedItem.occupation).map(occupation_number => {
-                                return (
-                                    <li >
-                                        Workers in the {mockData.occupations[occupation_number].name} occupations tend to study <strong>{mockData.occupations[occupation_number].major.join(', ')}</strong>.
-                                    </li>
-                                )
-                            })} */}
-
                         </div>
                     </div>
                 )
             }
+
+            {/* Displays a next button*/}
             {ranked && (
                 <div
                     style={{
@@ -829,6 +847,8 @@ function AIExposureVisualization() {
                     </button>
                 </div>
             )}
+
+            {/* Displays back and end buttons*/}
             {showTop && (
                 <div
                     style={{
